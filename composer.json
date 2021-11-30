@@ -1,11 +1,15 @@
 {
     "name": "eerzho/laravel-components",
     "type": "library",
+    "license": "MIT",
     "authors": [
         {
             "name": "eerzho",
             "email": "eerzho@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "php": ">=7.4",
+        "laravel/framework": ">=8"
+    }
 }

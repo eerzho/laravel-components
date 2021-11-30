@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Resources\BaseResource;
+namespace Eerzho\LaravelComponents\Http\Resources\BaseResource;
 
-use App\Components\DateFormat\DateFormatHelper;
+use Eerzho\LaravelComponents\Components\DateFormat\DateFormatHelper;
 use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Collection;

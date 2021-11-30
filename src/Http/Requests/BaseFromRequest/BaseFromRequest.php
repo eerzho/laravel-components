@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\BaseFromRequest;
+namespace Eerzho\LaravelComponents\Http\Requests\BaseFromRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 

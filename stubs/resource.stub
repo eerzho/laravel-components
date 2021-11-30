@@ -1,0 +1,19 @@
+<?php
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Eerzho\LaravelComponents\Http\Resources\BaseResource\BaseResource;
+
+class {{ class }} extends BaseResource
+{
+    /**
+    * @return string[]
+    */
+    public static function getFields(): array
+    {
+        return [
+            //
+        ];
+    }
+}

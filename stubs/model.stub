@@ -1,0 +1,12 @@
+<?php
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Eerzho\LaravelComponents\Models\BaseModel\BaseModel;
+
+class {{ class }} extends BaseModel
+{
+    use HasFactory;
+}

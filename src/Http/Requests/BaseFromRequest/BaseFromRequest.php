@@ -6,5 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 abstract class BaseFromRequest extends FormRequest
 {
+    /**
+     * @return array
+     */
    abstract public function rules(): array;
 }

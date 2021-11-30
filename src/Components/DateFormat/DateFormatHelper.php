@@ -2,9 +2,6 @@
 
 namespace Eerzho\LaravelComponents\Components\DateFormat;
 
-/**
- * Class DateFormatHelper
- */
 class DateFormatHelper
 {
     const DATE_FORMAT               = 'Y-m-d';

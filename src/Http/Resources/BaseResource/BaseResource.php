@@ -12,6 +12,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 abstract class BaseResource extends JsonResource
 {
+    /**
+     * @return array
+     */
     abstract public static function getFields(): array;
 
     /**

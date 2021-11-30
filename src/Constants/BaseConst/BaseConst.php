@@ -20,7 +20,7 @@ class BaseConst
     /**
      * @return array
      */
-    private static function getConstants()
+    protected static function getConstants()
     {
         $reflectionClass = new ReflectionClass(static::class);
 

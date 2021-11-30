@@ -2,7 +2,7 @@
 
 namespace Eerzho\LaravelComponents\Console\Commands\MakeCommands;
 
-use Eerzho\LaravelComponents\Console\Commands\BaseCommand\BaseCommand;
+use Eerzho\LaravelComponents\Commands\BaseCommand\BaseCommand;
 
 class MakeSearch extends BaseCommand
 {

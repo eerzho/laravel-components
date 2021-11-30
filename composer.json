@@ -8,9 +8,5 @@
             "email": "eerzho@gmail.com"
         }
     ],
-    "require": {
-        "php": ">=8.0",
-        "laravel/framework": "^8.40"
-    },
-    "version": "0.2"
+    "require": {}
 }

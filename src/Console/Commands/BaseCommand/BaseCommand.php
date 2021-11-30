@@ -1,6 +1,6 @@
 <?php
 
-namespace Eerzho\LaravelComponents\Commands\BaseCommand;
+namespace Eerzho\LaravelComponents\Console\Commands\BaseCommand;
 
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;

@@ -1,0 +1,11 @@
+{
+    "name": "eerzho/laravel-components",
+    "type": "library",
+    "authors": [
+        {
+            "name": "eerzho",
+            "email": "eerzho@gmail.com"
+        }
+    ],
+    "require": {}
+}

@@ -4,7 +4,7 @@ namespace Eerzho\LaravelComponents\Console\Commands\MakeCommands;
 
 use Eerzho\LaravelComponents\Console\Commands\BaseCommand\BaseCommand;
 
-class MakeRepository extends BaseCommand
+class MakeRepositoryCommand extends BaseCommand
 {
     protected $name = 'make:repository';
 

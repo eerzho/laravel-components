@@ -3,22 +3,33 @@
 namespace Eerzho\LaravelComponents\Searches\BaseSearch;
 
 use Eerzho\LaravelComponents\Components\DateFormat\DateFormatHelper;
+use Eerzho\LaravelComponents\Components\Request\DataTransfer;
+use Eerzho\LaravelComponents\Interfaces\Filter\FilterInterface;
 use Eerzho\LaravelComponents\Rules\SearchValidateIntegerRule;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 /**
- * @property Builder $builder
- * @property array   $searches
- * @property string  $sort
+ * @property Builder     $builder
+ * @property array       $searchFields
+ * @property string|null $sortField
+ * @property string      $filterFolder
+ * @property array       $defaultSearchName
  */
 abstract class BaseSearch
 {
-    private Builder $builder;
-    private array $searches;
-    private ?string $sort;
+    protected DataTransfer $data;
+    private $builder;
+    private $searchFields;
+    private $sortField;
+
+    protected $filterFolder = 'Filters';
+    protected $defaultSearchName = [
+        'id',
+        'period_created_at',
+        'period_updated_at',
+    ];
 
     /**
      * @return string
@@ -36,78 +47,185 @@ abstract class BaseSearch
     abstract protected function getSorts(): array;
 
     /**
-     * @param Request $request
+     * @param DataTransfer $data
      */
-    public function __construct(Request $request)
+    public function __construct(DataTransfer $data)
     {
-        $this->builder = app($this->getModel())->newQuery();
-        $this->searches = $request->query('search', []);
-        $this->sort = $request->query('sort');
+        $this->data = $data;
     }
 
     /**
      * @return Builder
      */
-    public function getQuery(): Builder
+    final public function getQuery()
     {
-        if ($this->isValidSearches()) {
-            return $this->builder->whereRaw('0=1');
+        $builder = $this->getBuilder();
+
+        if ($this->isValidSearch($fields = $this->getSearchFields())) {
+            $builder = $this->applySearches($builder, $fields);
         }
 
-        return $this->applyDecoratorsFromRequest();
+        if (in_array(($field = $this->getSortField()), $this->getSorts())) {
+            $builder = $this->applySort($builder, $field);
+        }
+
+        return $builder;
+    }
+
+    /**
+     * @param array $fields
+     *
+     * @return bool
+     */
+    private function isValidSearch(array $fields): bool
+    {
+        if (count($fields) && $this->validationRules()) {
+
+            return $this->validateSearchFields($fields);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $fields
+     *
+     * @return bool
+     */
+    protected function validateSearchFields(array $fields): bool
+    {
+        $validator = Validator::make($fields, $this->validationRules());
+
+        return !$validator->fails();
     }
 
     /**
      * @return Builder
      */
-    private function applyDecoratorsFromRequest(): Builder
+    protected function setBuilder()
     {
-        foreach ($this->searches as $filterName => $value) {
+        return app($this->getModel())->newQuery();
+    }
 
-            if (class_exists($decorator = $this->createFilterDecorator($filterName))) {
-                $this->builder = $decorator::apply($this->builder, $value);
+    /**
+     * @return Builder
+     */
+    private function getBuilder()
+    {
+        return $this->builder ?: $this->builder = $this->setBuilder();
+    }
 
-            } elseif (class_exists($decorator = $this->createFilterDecorator($filterName, true))) {
-                $this->builder = $decorator::apply($this->builder, $value);
+    /**
+     * @return array
+     */
+    protected function setSearchFields(): array
+    {
+        return $this->data->get('search', []);
+    }
+
+    /**
+     * @return array
+     */
+    private function getSearchFields(): array
+    {
+        return $this->searchFields ?: $this->searchFields = $this->setSearchFields();
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function setSortField(): ?string
+    {
+        return $this->data->get('sort');
+    }
+
+    /**
+     * @return string|null
+     */
+    private function getSortField(): ?string
+    {
+        return $this->sortField ?: $this->sortField = $this->setSortField();
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDefaultFilterNamespace(): string
+    {
+        return __NAMESPACE__;
+    }
+
+    /**
+     * @param string $queryName
+     *
+     * @return string
+     */
+    protected function getFilterFileName(string $queryName): string
+    {
+        return Str::studly($queryName);
+    }
+
+    /**
+     * @param Builder $builder
+     * @param array   $fields
+     *
+     * @return Builder
+     */
+    private function applySearches($builder, array $fields)
+    {
+        foreach ($fields as $filterName => $value) {
+
+            if (in_array($filterName, $this->defaultSearchName)) {
+                $decorator = $this->createFilterDecorator($filterName, true);
+            } else {
+                $decorator = $this->createFilterDecorator($filterName);
+            }
+
+            if (class_exists($decorator)) {
+                /** @var FilterInterface $decorator */
+                $builder = $decorator::apply($builder, $value);
             }
         }
 
-        if (in_array($this->sort, $this->getSorts())) {
-
-            if ($isDesc = str_starts_with($this->sort, '-')) {
-                $this->sort = substr($this->sort, 1, strlen($this->sort));
-            }
-
-            $this->builder->orderBy($this->sort, $isDesc ? 'desc' : 'asc');
-        }
-
-        return $this->builder;
+        return $builder;
     }
 
     /**
      * @param string $name
-     * @param bool   $default
+     * @param bool   $isDefaultFilter
      *
      * @return string
      */
-    private function createFilterDecorator(string $name, bool $default = false): string
+    private function createFilterDecorator(string $name, bool $isDefaultFilter = false): string
     {
-        return ($default ? __NAMESPACE__ : $this->getNamespace()) . '\\Filters\\' . Str::studly($name);
+        return ($isDefaultFilter ? $this->getDefaultFilterNamespace() : $this->getNamespace()) . "\\$this->filterFolder\\" . $this->getFilterFileName($name);
     }
 
     /**
-     * @return bool
+     * @param Builder $builder
+     * @param string  $field
+     *
+     * @return Builder
      */
-    private function isValidSearches(): bool
+    private function applySort($builder, string $field)
     {
-        if ($this->searches && $this->validationRules()) {
-
-            $validator = Validator::make($this->searches, $this->validationRules());
-
-            return $validator->fails();
+        if ($isDesc = str_starts_with($field, '-')) {
+            $field = substr($field, 1, strlen($field));
         }
 
-        return false;
+        return $this->buildSortQuery($builder, $field, $isDesc);
+    }
+
+    /**
+     * @param Builder $builder
+     * @param string  $field
+     * @param bool    $isDesc
+     *
+     * @return Builder
+     */
+    protected function buildSortQuery($builder, string $field, bool $isDesc)
+    {
+        return $builder->orderBy($field, $isDesc ? "desc" : "asc");
     }
 
     /**

@@ -148,24 +148,6 @@ abstract class BaseSearch
     }
 
     /**
-     * @return string
-     */
-    protected function getDefaultFilterNamespace(): string
-    {
-        return __NAMESPACE__;
-    }
-
-    /**
-     * @param string $queryName
-     *
-     * @return string
-     */
-    protected function getFilterFileName(string $queryName): string
-    {
-        return Str::studly($queryName);
-    }
-
-    /**
      * @param Builder $builder
      * @param array   $fields
      *
@@ -199,6 +181,24 @@ abstract class BaseSearch
     private function createFilterDecorator(string $name, bool $isDefaultFilter = false): string
     {
         return ($isDefaultFilter ? $this->getDefaultFilterNamespace() : $this->getNamespace()) . "\\$this->filterFolder\\" . $this->getFilterFileName($name);
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDefaultFilterNamespace(): string
+    {
+        return __NAMESPACE__;
+    }
+
+    /**
+     * @param string $queryName
+     *
+     * @return string
+     */
+    protected function getFilterFileName(string $queryName): string
+    {
+        return Str::studly($queryName);
     }
 
     /**
